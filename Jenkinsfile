@@ -53,6 +53,7 @@ pipeline {
         stage('Run') {
             steps {
                 echo "//Stage-5 === run ==="
+                sh 'sleep 60'
                 script {
                     final String url = "http://localhost:8989"
                     final String response = sh(script: "curl -s $url", returnStdout: true).trim()
