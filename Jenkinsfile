@@ -47,7 +47,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo "//Stage-4 === deploy jars ==="
-                sh 'nohup java -jar target/myproject-0.0.1-SNAPSHOT.jar --server.port=8989'
+                sh 'java -jar target/myproject-0.0.1-SNAPSHOT.jar --server.port=8989 &'
             }
         }
         stage('Run') {
