@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     parameters {
-        string(name:'repoUrl', defaultValue:'https://github.com/tangjoe/pipeline-tutorial.git', description:'代码路径')
+        string(name:'repoUrl', defaultValue:'https://github.com/tangjoe/spring-boot.git', description:'代码路径')
     }
 
     tools {
@@ -29,7 +29,7 @@ pipeline {
         stage('Checkout source') {
             steps {
                 echo "//Stage-1 === Checkout source ==="
-                git url: ${params.repoUrl}
+                git url:params.repoUrl
             }
         }
         stage('Compile') {
