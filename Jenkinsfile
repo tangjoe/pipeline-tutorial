@@ -40,14 +40,24 @@ pipeline {
         }
         stage('Build Fat Jars') {
             steps {
-                echo "//Stage-3 === build fat jars ==="
+                echo "//Stage-3 === build jars ==="
                 sh 'mvn package'
             }   
         }   
+        stage('Deploy') {
+            steps {
+                echo "//Stage-4 === deploy jars ==="
+                sh 'nohup java -jar target/myproject-0.0.1-SNAPSHOT.jar --server.port=8989'
+            }
+        }
         stage('Run') {
             steps {
-                echo "//Stage-4 === run the fat jars ==="
-                sh 'nohup java -jar target/myproject-0.0.1-SNAPSHOT.jar --server.port=8989; curl http://localhost:8989'
+                echo "//Stage-5 === run ==="
+                script {
+                    final String url = "http://localhost:8989"
+                    final String response = sh(script: "curl -s $url", returnStdout: true).trim()
+                    echo response
+                }
             }
         }
     }
