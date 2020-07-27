@@ -13,7 +13,7 @@ pipeline {
     post {
         always {
             echo "//Post === clear workspace ==="
-            echo "deleteDir()"
+            deleteDir()
         }
         failure {
             echo "//Post === pipeline job failure ==="
@@ -44,5 +44,11 @@ pipeline {
                 sh 'mvn package'
             }   
         }   
+        stage('Run') {
+            steps {
+                echo "//Stage-4 === run the fat jars ==="
+                sh 'nohup java -jar target/myproject-0.0.1-SNAPSHOT.jar --server.port=8989; curl http://localhost:8989'
+            }
+        }
     }
 }
