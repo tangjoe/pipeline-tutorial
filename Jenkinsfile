@@ -3,7 +3,7 @@ pipeline {
 
     parameters {
         string(name:'repoUrl', defaultValue:'https://github.com/tangjoe/spring-boot.git', description:'代码路径')
-        string(name:'dev_server', defaultValue:'192.168.200.1,8080,tangjoe,password', description:'开发服务器(IP,Port,Name,Passwd)')
+        string(name:'dev_server', defaultValue:'IP,Port,Name,Passwd', description:'开发服务器(IP,Port,Name,Passwd)')
         string(name:'prod_server', defaultValue:'IP,Port,Name,Passwd', description:'生产服务器(IP,Port,Name,Passwd)')
     }
 
