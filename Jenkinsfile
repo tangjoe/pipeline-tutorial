@@ -62,7 +62,7 @@ pipeline {
                 echo "//Stage-6 === test with curl ==="      
                 sleep 30
                 script {
-                    final String url = "http://localhost:8989"
+                    final String url = "http://localhost:8089"
                     final String response = sh(script: "curl -s $url", returnStdout:true).trim()
                     echo response
                 }
