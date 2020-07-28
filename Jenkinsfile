@@ -47,7 +47,7 @@ pipeline {
         stage('Build docker image') {
             steps {
                 echo "//Stage-4 === build docker ==="
-                sh 'mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)'
+                sh 'mkdir -p target/dependency; cd target/dependency; jar -xf ../*.jar'
                 sh 'docker build -t hello-sb -f Dockerfile.spring-boot .'
             }
         }
@@ -57,7 +57,7 @@ pipeline {
                 sh 'docker run -d --rm -p 8089:8080 hello-sb'
             }
         }
-        stage('Test with curl) {
+        stage('Test with curl') {
             steps {
                 echo "//Stage-6 === test with curl ==="      
                 sleep 30
