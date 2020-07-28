@@ -55,8 +55,7 @@ pipeline {
                 echo "//Stage-5 === run ==="
                 script {
                     final String url = "http://localhost:8989"
-                    final String response = sh(script: "curl -s --retry 10 --retry-delay 6 $url", returnStdout: true).trim()
-                    echo response
+                    sh 'curl -s --retry 10 --retry-delay 6 $url'
                 }
             }
         }
