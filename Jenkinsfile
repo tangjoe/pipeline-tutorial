@@ -13,7 +13,7 @@ pipeline {
     post {
         always {
             echo "//Post === clear workspace ==="
-            deleteDir()
+            echo "//deleteDir()"
         }
         failure {
             echo "//Post === pipeline job failure ==="
