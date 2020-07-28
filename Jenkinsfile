@@ -14,7 +14,6 @@ pipeline {
         always {
             echo "//Post === clear workspace ==="
             deleteDir()
-            sh 'docker rm -f hello-sb'
         }
         failure {
             echo "//Post === pipeline job failure ==="
@@ -50,23 +49,6 @@ pipeline {
                 echo "//Stage-4 === build docker ==="
                 sh 'mkdir -p target/dependency; cd target/dependency; jar -xf ../*.jar'
                 sh 'docker build -t hello-sb -f Dockerfile.spring-boot .'
-            }
-        }
-        stage('Run docker') {
-            steps {
-                echo "//Stage-5 === run docker ==="
-                sh 'docker run -d --name hello-sb -p 8089:8080 hello-sb'
-            }
-        }
-        stage('Test with curl') {
-            steps {
-                echo "//Stage-6 === test with curl ==="      
-                sleep 30
-                script {
-                    final String url = "http://localhost:8089"
-                    final String response = sh(script: "curl -s $url", returnStdout:true).trim()
-                    echo response
-                }
             }
         }
     }
