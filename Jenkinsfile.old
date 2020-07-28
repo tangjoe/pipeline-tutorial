@@ -44,23 +44,16 @@ pipeline {
                 sh 'mvn package'
             }   
         }   
-        stage('Build docker image') {
+        stage('Deploy') {
             steps {
-                echo "//Stage-4 === build docker ==="
-                sh 'mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)'
-                sh 'docker build -t hello-sb -f Dockerfile.spring-boot .'
+                echo "//Stage-4 === deploy jars ==="
+                sh 'java -jar target/myproject-0.0.1-SNAPSHOT.jar --server.port=8989 &'
             }
         }
-        stage('Run docker') {
+        stage('Run') {
             steps {
-                echo "//Stage-5 === run docker ==="
-                sh 'docker run -d --rm -p 8089:8080 hello-sb'
-            }
-        }
-        stage('Test with curl) {
-            steps {
-                echo "//Stage-6 === test with curl ==="      
-                sleep 30
+                echo "//Stage-5 === run ==="
+                sleep 60
                 script {
                     final String url = "http://localhost:8989"
                     final String response = sh(script: "curl -s $url", returnStdout:true).trim()
