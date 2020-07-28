@@ -13,7 +13,8 @@ pipeline {
     post {
         always {
             echo "//Post === clear workspace ==="
-            echo "//deleteDir()"
+            deleteDir()
+            sh 'docker rm -f hello-sb'
         }
         failure {
             echo "//Post === pipeline job failure ==="
@@ -54,7 +55,7 @@ pipeline {
         stage('Run docker') {
             steps {
                 echo "//Stage-5 === run docker ==="
-                sh 'docker run -d --rm -p 8089:8080 hello-sb'
+                sh 'docker run -d --name hello-sb -p 8089:8080 hello-sb'
             }
         }
         stage('Test with curl') {
