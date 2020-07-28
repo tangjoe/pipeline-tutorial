@@ -53,8 +53,11 @@ pipeline {
         stage('Run') {
             steps {
                 echo "//Stage-5 === run ==="
+                sleep 60
                 script {
-                    sh 'curl -s --retry 10 --retry-delay 6 http://localhost:8989'
+                    final String url = "http://localhost:8989"
+                    final String response = sh(script: "curl -s $url", returnStdout:true).trim()
+                    echo response
                 }
             }
         }
