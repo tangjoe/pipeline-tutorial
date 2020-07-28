@@ -56,7 +56,7 @@ pipeline {
                 sh 'sleep 60'
                 script {
                     final String url = "http://localhost:8989"
-                    while [ "$(curl -s -o /dev/null -w ''%{http_code}'' $url)" != "200" ]; do sleep 1; done
+                    while ("$(curl -s -o /dev/null -w ''%{http_code}'' $url)" != "200"); do sleep 1; done
                 }
             }
         }
