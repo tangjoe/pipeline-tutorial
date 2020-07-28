@@ -37,7 +37,7 @@ pipeline {
                     dev_serverName=dev_split[2]
                     dev_serverPasswd=dev_split[3]
                 }
-                echo 'Dev: ' ${dev_serverName}:${dev_serverPasswd}@${dev_serverIP}:${dev_serverPort}
+                echo "Dev: ${dev_serverName}:${dev_serverPasswd}@${dev_serverIP}:${dev_serverPort}"
             }
         }
         stage('Checkout source') {
