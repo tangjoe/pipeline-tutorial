@@ -53,7 +53,7 @@ pipeline {
                 script {
                     def scannerHome = tool 'SonarQube Scanner';
                         withSonarQubeEnv("SonarQube") {
-                            sh "${tool("SonarQube_Scanner")}/bin/sonar-scanner \
+                            sh "${tool("SonarQube Scanner")}/bin/sonar-scanner \
                                 -Dsonar.projectKey=hello-sb \
                                 -Dsonar.sources=. \
                                 -Dsonar.css.node=. \
