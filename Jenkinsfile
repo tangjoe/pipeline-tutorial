@@ -51,7 +51,7 @@ pipeline {
             steps {
                 echo "//Stage-2 === Code Quality Check via SonarQube  ==="
                 script {
-                    def scannerHome = tool 'SonarQube_Scanner';
+                    def scannerHome = tool 'SonarQube Scanner';
                         withSonarQubeEnv("SonarQube") {
                             sh "${tool("SonarQube_Scanner")}/bin/sonar-scanner \
                                 -Dsonar.projectKey=hello-sb \
