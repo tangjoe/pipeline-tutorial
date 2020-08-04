@@ -47,21 +47,37 @@ pipeline {
                 git url:params.repoUrl
             }
         }
+        stage('Code Qualify Check via SonarQube') {
+            steps {
+                echo "//Stage-2 === Code Quality Check via SonarQube  ==="
+                script {
+                    def scannerHome = tool 'SonarQube_Scanner';
+                        withSonarQubeEnv("SonarQube") {
+                            sh "${tool("SonarQube_Scanner")}/bin/sonar-scanner \
+                                -Dsonar.projectKey=hello-sb \
+                                -Dsonar.sources=. \
+                                -Dsonar.css.node=. \
+                                -Dsonar.host.url=http://sonarqube:9000 \
+                                -Dsonar.login=0afb73a6fdb8045c35f30e00a3771582c307ca09"
+                        }
+                }
+            }
+        }
         stage('Compile') {
             steps {
-                echo "//Stage-2 === complile project ==="
+                echo "//Stage-3 === complile project ==="
                 sh 'mvn clean test'
             }
         }
         stage('Build Fat Jars') {
             steps {
-                echo "//Stage-3 === build jars ==="
+                echo "//Stage-4 === build jars ==="
                 sh 'mvn package'
             }   
         }   
         stage('Build docker image') {
             steps {
-                echo "//Stage-4 === build docker ==="
+                echo "//Stage-5 === build docker ==="
                 sh 'mkdir -p target/dependency; cd target/dependency; jar -xf ../*.jar'
                 sh 'docker build -t hello-sb -f Dockerfile.spring-boot .'
             }
