@@ -58,7 +58,7 @@ pipeline {
                                 -Dsonar.sources=. \
                                 -Dsonar.css.node=. \
                                 -Dsonar.host.url=http://sonarqube:9000 \
-                                -Dsonar.login=0044d2652e013d2eb2f82d912a9c55708ff583d8"
+                                -Dsonar.login=9f9451072a6a3005330dbf6395534a2542a0bfe1"
                         }
                 }
             }
