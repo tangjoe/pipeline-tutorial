@@ -58,8 +58,7 @@ pipeline {
                                 -Dsonar.sources=. \
                                 -Dsonar.css.node=. \
                                 -Dsonar.host.url=http://sonarqube:9000 \
-                                -Dsonar.login=admin \
-                                -Dsonar.password=admin"
+                                -Dsonar.login=0044d2652e013d2eb2f82d912a9c55708ff583d8"
                         }
                 }
             }
