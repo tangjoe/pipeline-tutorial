@@ -77,9 +77,14 @@ pipeline {
         }   
         stage('Build docker image') {
             steps {
-                echo "//Stage-5 === build docker ==="
+                echo "//Stage-5 === build image ==="
                 sh 'mkdir -p target/dependency; cd target/dependency; jar -xf ../*.jar'
                 sh 'docker build -t hello-sb -f Dockerfile.spring-boot .'
+            }
+        }
+        stage('Push docker image to Nexus') {
+            steps {
+                echo "//Stage-6 === push image ==="
                 sh 'docker tag hello-sb 127.0.0.1:8082/hello-sb'
                 sh 'docker push 127.0.0.1:8082/hello-sb'
             }
