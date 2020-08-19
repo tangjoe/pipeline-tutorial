@@ -7,6 +7,14 @@ pipeline {
         string(name:'prod_server', defaultValue:'IP,Port,Name,Passwd', description:'生产服务器(IP,Port,Name,Passwd)')
     }
 
+    environment {
+        NEXUS_VERSION = "nexus3"
+        NEXUS_PROTOCOL = "http"
+        NEXUS_URL = "nexus:8081/nexus"
+        NEXUS_REPOSITORY = "maven-private-repo"
+        NEXUS_CREDENTIAL_ID = "maven-login-on-nexus"
+    }
+
     tools {
         maven 'maven3.6'
         jdk   'jdk8'
@@ -75,16 +83,53 @@ pipeline {
                 sh 'mvn package'
             }   
         }   
+        stage('Maven to Nexus Repository Manager') {
+            steps {
+                echo "//Stage-5 === publish to nexus ==="
+                script {
+                    pom = readMavenPom file: "pom.xml";
+                    filesByGlob = findFiles(glob: "target/*.${pom.packaging}");
+                    echo "${filesByGlob[0].name} ${filesByGlob[0].path} ${filesByGlob[0].directory} ${filesByGlob[0].length} ${filesByGlob[0].lastModified}";
+                    artifactPath = filesByGlob[0].path;
+                    artifactExists = fileExists artifactPath;
+                    if (artifactExists) {
+                        echo "*** File:${artifactPath},group:${pom.groupId},packaging:${pom.packaging},version:${pom.version}";
+
+                        nexusArtifactUploader (
+                            nexusVersion: NEXUS_VERSION,
+                            protocol: NEXUS_PROTOCOL,
+                            nexusUrl: NEXUS_URL,
+                            groupId: pom.groupId,
+                            version: pom.version,
+                            repository: NEXUS_REPOSITORY,
+                            credentialsId: NEXUS_CREDENTIAL_ID,
+                            artifacts: [
+                                [artifactId: pom.artifactId,
+                                 classifier: '',
+                                 file: artifactPath,
+                                 type: pom.packaging],
+                                [artifactId: pom.artifactId,
+                                 classifier: '',
+                                 file: "pom.xml",
+                                 type: "pom"]
+                            ]
+                        );
+                    } else {
+                        error "*** File: ${artifactPath}, could not be found";
+                    }
+                }
+            }
+        }
         stage('Build docker image') {
             steps {
-                echo "//Stage-5 === build image ==="
+                echo "//Stage-6 === build docker image ==="
                 sh 'mkdir -p target/dependency; cd target/dependency; jar -xf ../*.jar'
                 sh 'docker build -t hello-sb -f Dockerfile.spring-boot .'
             }
         }
         stage('Push docker image to Nexus') {
             steps {
-                echo "//Stage-6 === push image ==="
+                echo "//Stage-7 === push docker image ==="
                 sh 'docker tag hello-sb 127.0.0.1:8082/hello-sb'
                 sh 'docker push 127.0.0.1:8082/hello-sb'
             }
