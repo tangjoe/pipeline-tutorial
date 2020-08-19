@@ -22,23 +22,23 @@ pipeline {
 
     post {
         always {
-            echo "//Post === clear workspace ==="
-            echo "//deleteDir()"
+            echo "// clear workspace"
+            echo "// deleteDir()"
         }
         failure {
-            echo "//Post === pipeline job failure ==="
+            echo "// pipeline job failure"
         }
     }
 
     stages {
         stage('清理本地仓库') {
             steps {
-                echo "//Stage-0 === 清理本地仓库==="
+                echo "// 清理本地仓库"
             }
         }
         stage('部署到开发环境') {
             steps {
-                echo "//Stage-0 === 部署到开发环境 ==="
+                echo "// 部署到开发环境"
                 script {
                     def dev_split=params.dev_server.split(",")
                     dev_serverIP=dev_split[0]
@@ -49,15 +49,15 @@ pipeline {
                 echo "Dev: ${dev_serverName}:${dev_serverPasswd}@${dev_serverIP}:${dev_serverPort}"
             }
         }
-        stage('Checkout source') {
+        stage('git: checkout source') {
             steps {
-                echo "//Stage-1 === Checkout source ==="
+                echo "// git: checkout source"
                 git url:params.repoUrl
             }
         }
-        stage('Code Qualify Check via SonarQube') {
+        stage('sonarqube: code qualify check') {
             steps {
-                echo "//Stage-2 === Code Quality Check via SonarQube  ==="
+                echo "// sonarqube: code qualify check"
                 script {
                     def scannerHome = tool 'SonarQube Scanner';
                         withSonarQubeEnv("SonarQube") {
@@ -71,21 +71,21 @@ pipeline {
                 }
             }
         }
-        stage('Compile') {
+        stage('maven: compile & test') {
             steps {
-                echo "//Stage-3 === complile project ==="
+                echo "// maven: compile & test"
                 sh 'mvn clean test'
             }
         }
-        stage('Build Fat Jars') {
+        stage('maven: build fat jars') {
             steps {
-                echo "//Stage-4 === build jars ==="
+                echo "// maven: build fat jars"
                 sh 'mvn package'
             }   
         }   
-        stage('Maven to Nexus Repository Manager') {
+        stage('nexus: push jars to Nexus') {
             steps {
-                echo "//Stage-5 === publish to nexus ==="
+                echo "// nexus: push jars to Nexus"
                 script {
                     pom = readMavenPom file: "pom.xml";
                     filesByGlob = findFiles(glob: "target/*.${pom.packaging}");
@@ -120,16 +120,16 @@ pipeline {
                 }
             }
         }
-        stage('Build docker image') {
+        stage('docker: build image') {
             steps {
-                echo "//Stage-6 === build docker image ==="
+                echo "// docker: build image"
                 sh 'mkdir -p target/dependency; cd target/dependency; jar -xf ../*.jar'
                 sh 'docker build -t hello-sb -f Dockerfile.spring-boot .'
             }
         }
-        stage('Push docker image to Nexus') {
+        stage('docker: push image to Nexus') {
             steps {
-                echo "//Stage-7 === push docker image ==="
+                echo "// docker: push image to Nexus"
                 sh 'docker login -u docker -p P@ssw0rd localhost:8082'
                 sh 'docker tag hello-sb localhost:8082/hello-sb:1.0'
                 sh 'docker push localhost:8082/hello-sb:1.0'
