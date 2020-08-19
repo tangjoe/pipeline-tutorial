@@ -130,8 +130,9 @@ pipeline {
         stage('Push docker image to Nexus') {
             steps {
                 echo "//Stage-7 === push docker image ==="
-                sh 'docker tag hello-sb 127.0.0.1:8082/hello-sb'
-                sh 'docker push 127.0.0.1:8082/hello-sb'
+                sh 'docker login -u docker -p P@ssw0rd localhost:8082'
+                sh 'docker tag hello-sb localhost:8082/hello-sb:1.0'
+                sh 'docker push localhost:8082/hello-sb:1.0'
             }
         }
     }
