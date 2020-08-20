@@ -141,10 +141,13 @@ pipeline {
                     echo "// docker: startup & test container"
                     docker.image('localhost:8082/hello-sb:1.0')
                     .withRun('-p 9080:8080 --network cicd_net --name hello-sb --hostname hello-sb') {
-                        timeout(time: 60, unit: 'SECONDS') {
+                        timeout(time: 600, unit: 'SECONDS') {
                             waitUntil {
                                 def r = sh script:
-                                'curl http://hello-sb:9080/ | grep "Hello World!"', returnStatus: true
+                                // Note:
+                                // Use container internal port '8080', external port doesn't work
+                                //
+                                'curl http://hello-sb:8080/ | grep "Hello World!"', returnStatus: true
                                 return (r == 0);
                             }
                         }
