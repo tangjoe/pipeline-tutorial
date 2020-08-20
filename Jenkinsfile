@@ -155,7 +155,7 @@ pipeline {
         stage('docker: delete container') {
             steps {
                 echo "// docker: delete container"
-                sh 'docker rm -f hello-sb'
+                echo "sh 'docker rm -f hello-sb'"
             }
         }
     }
