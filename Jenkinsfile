@@ -141,7 +141,7 @@ pipeline {
                     echo "// docker: startup & test container"
                     docker.image('localhost:8082/hello-sb:1.0')
                     .withRun('-p 9080:8080 --network cicd_net --name hello-sb --hostname hello-sb') {
-                        timeout(time: 600, unit: 'SECONDS') {
+                        timeout(time: 60, unit: 'SECONDS') {
                             waitUntil {
                                 def r = sh script:
                                 // Note:
@@ -158,7 +158,7 @@ pipeline {
         stage('docker: delete container') {
             steps {
                 echo "// docker: delete container"
-                echo "sh 'docker rm -f hello-sb'"
+                sh 'docker rm -f hello-sb'
             }
         }
     }
