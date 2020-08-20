@@ -142,8 +142,7 @@ pipeline {
                     timeout(time: 60, unit: 'SECONDS') {
                         waitUntil {
                             def r = sh script:
-                            'curl http://hello-sb:9080/ | grep "Hello World!"',
-                            returnStatus: true
+                            'curl http://hello-sb:9080/ | grep "Hello World!"', returnStatus: true
                             return (r == 0);
                         }
                     }
