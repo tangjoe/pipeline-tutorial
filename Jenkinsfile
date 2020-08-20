@@ -136,6 +136,7 @@ pipeline {
             }
         }
         stage('docker: startup container') {
+            steps {
                 docker.image('localhost:8082/hello-sb:1.0')
                 .withRun('-p 9080:8080 --network cicd_net --name hello-sb --hostname hello-sb') {
                     timeout(time: 60, unit: 'SECONDS') {
@@ -147,6 +148,7 @@ pipeline {
                         }
                     }
                 }
+            }
         }
         stage('docker: delete container') {
             steps {
