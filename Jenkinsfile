@@ -140,11 +140,13 @@ pipeline {
                 echo "// docker: startup container"
                 docker.image('localhost:8082/hello-sb:1.0')
                 .withRun('-p 9080:8080 --network cicd_net --name hello-sb --hostname hello-sb') {
-                    waitUntil {
-                        def r = sh script:
-                        'curl http://hello-sb/ | grep "Hello World!"',
-                        returnStatus: true
-                        return (r == 0);
+                    timeout(time: 60, unit: 'SECONDS') {
+                        waitUntil {
+                            def r = sh script:
+                            'curl http://hello-sb:9080/ | grep "Hello World!"',
+                            returnStatus: true
+                            return (r == 0);
+                        }
                     }
                 }
             }
