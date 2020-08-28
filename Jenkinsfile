@@ -130,7 +130,7 @@ pipeline {
         stage('clair-scanner: image security scan') {
             steps {
                 echo "// clair-scanner: image security scan"
-                sh 'export IP=$(ip r | tail -n1 | awk '{ print $9 }')'
+                sh 'export IP=$(ip r | tail -n1 | awk \'{ print $9 }\')'
                 sh 'clair-scanner --ip $IP --clair=http://clair:6060 --threshold="Critical" hello-sb:latest'
             }
         }
