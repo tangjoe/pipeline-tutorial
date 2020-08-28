@@ -130,8 +130,7 @@ pipeline {
         stage('clair-scanner: image security scan') {
             steps {
                 echo "// clair-scanner: image security scan"
-                IP=$(ip r | tail -n1 | awk '{ print $9 }')
-                clair-scanner --ip $IP --clair=http://clair:6060 --threshold="Critical" hello-sb:latest
+                sh 'IP=$(ip r | tail -n1 | awk '{ print $9 }'); clair-scanner --ip $IP --clair=http://clair:6060 --threshold="Critical" hello-sb:latest'
             }
         }
         stage('docker: push image to Nexus') {
