@@ -157,7 +157,7 @@ pipeline {
                                 // Note:
                                 // Use container internal port '8080', external port doesn't work
                                 //
-                                'curl http://hello-sb:8080/ | grep "Hello World!"', returnStatus: true
+                                'curl http://hello-sb:8080/', returnStatus: true
                                 return (r == 0);
                             }
                         }
