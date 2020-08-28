@@ -7,6 +7,14 @@ pipeline {
         string(name:'prod_server', defaultValue:'IP,Port,Name,Passwd', description:'生产服务器(IP,Port,Name,Passwd)')
     }
 
+    environment {
+        NEXUS_VERSION = "nexus3"
+        NEXUS_PROTOCOL = "http"
+        NEXUS_URL = "nexus:8081/nexus"
+        NEXUS_REPOSITORY = "maven-private-repo"
+        NEXUS_CREDENTIAL_ID = "maven-login-on-nexus"
+    }
+
     tools {
         maven 'maven3.6'
         jdk   'jdk8'
@@ -14,23 +22,23 @@ pipeline {
 
     post {
         always {
-            echo "//Post === clear workspace ==="
-            echo "//deleteDir()"
+            echo "// clear workspace"
+            deleteDir()
         }
         failure {
-            echo "//Post === pipeline job failure ==="
+            echo "// pipeline job failure"
         }
     }
 
     stages {
         stage('清理本地仓库') {
             steps {
-                echo "//Stage-0 === 清理本地仓库==="
+                echo "// 清理本地仓库"
             }
         }
         stage('部署到开发环境') {
             steps {
-                echo "//Stage-0 === 部署到开发环境 ==="
+                echo "// 部署到开发环境"
                 script {
                     def dev_split=params.dev_server.split(",")
                     dev_serverIP=dev_split[0]
@@ -41,15 +49,15 @@ pipeline {
                 echo "Dev: ${dev_serverName}:${dev_serverPasswd}@${dev_serverIP}:${dev_serverPort}"
             }
         }
-        stage('Checkout source') {
+        stage('git: checkout source') {
             steps {
-                echo "//Stage-1 === Checkout source ==="
+                echo "// git: checkout source"
                 git url:params.repoUrl
             }
         }
-        stage('Code Qualify Check via SonarQube') {
+        stage('sonarqube: code qualify check') {
             steps {
-                echo "//Stage-2 === Code Quality Check via SonarQube  ==="
+                echo "// sonarqube: code qualify check"
                 script {
                     def scannerHome = tool 'SonarQube Scanner';
                         withSonarQubeEnv("SonarQube") {
@@ -58,28 +66,99 @@ pipeline {
                                 -Dsonar.sources=. \
                                 -Dsonar.css.node=. \
                                 -Dsonar.host.url=http://sonarqube:9000 \
-                                -Dsonar.login=0afb73a6fdb8045c35f30e00a3771582c307ca09"
+                                -Dsonar.login=9e90f99c041ef33609b50f60d205c6261e8e7ff5"
                         }
                 }
             }
         }
-        stage('Compile') {
+        stage('maven: compile & test') {
             steps {
-                echo "//Stage-3 === complile project ==="
+                echo "// maven: compile & test"
                 sh 'mvn clean test'
             }
         }
-        stage('Build Fat Jars') {
+        stage('maven: build fat jars') {
             steps {
-                echo "//Stage-4 === build jars ==="
+                echo "// maven: build fat jars"
                 sh 'mvn package'
             }   
         }   
-        stage('Build docker image') {
+        stage('nexus: push jars to Nexus') {
             steps {
-                echo "//Stage-5 === build docker ==="
+                echo "// nexus: push jars to Nexus"
+                script {
+                    pom = readMavenPom file: "pom.xml";
+                    filesByGlob = findFiles(glob: "target/*.${pom.packaging}");
+                    echo "${filesByGlob[0].name} ${filesByGlob[0].path} ${filesByGlob[0].directory} ${filesByGlob[0].length} ${filesByGlob[0].lastModified}";
+                    artifactPath = filesByGlob[0].path;
+                    artifactExists = fileExists artifactPath;
+                    if (artifactExists) {
+                        echo "*** File:${artifactPath},group:${pom.groupId},packaging:${pom.packaging},version:${pom.version}";
+
+                        nexusArtifactUploader (
+                            nexusVersion: NEXUS_VERSION,
+                            protocol: NEXUS_PROTOCOL,
+                            nexusUrl: NEXUS_URL,
+                            groupId: pom.groupId,
+                            version: pom.version,
+                            repository: NEXUS_REPOSITORY,
+                            credentialsId: NEXUS_CREDENTIAL_ID,
+                            artifacts: [
+                                [artifactId: pom.artifactId,
+                                 classifier: '',
+                                 file: artifactPath,
+                                 type: pom.packaging],
+                                [artifactId: pom.artifactId,
+                                 classifier: '',
+                                 file: "pom.xml",
+                                 type: "pom"]
+                            ]
+                        );
+                    } else {
+                        error "*** File: ${artifactPath}, could not be found";
+                    }
+                }
+            }
+        }
+        stage('docker: build image') {
+            steps {
+                echo "// docker: build image"
                 sh 'mkdir -p target/dependency; cd target/dependency; jar -xf ../*.jar'
                 sh 'docker build -t hello-sb -f Dockerfile.spring-boot .'
+            }
+        }
+        stage('clair-scanner: image security scan') {
+            steps {
+                echo "// clair-scanner: image security scan"
+                sh 'export IP=$(ip r | tail -n1 | awk \'{ print $9 }\'); clair-scanner --ip $IP --clair=http://clair:6060 --threshold="Critical" hello-sb:latest'
+            }
+        }
+        stage('docker: push image to Nexus') {
+            steps {
+                echo "// docker: push image to Nexus"
+                sh 'docker login -u docker -p P@ssw0rd localhost:8082'
+                sh 'docker tag hello-sb localhost:8082/hello-sb:1.0'
+                sh 'docker push localhost:8082/hello-sb:1.0'
+            }
+        }
+        stage('docker: startup container') {
+            steps {
+                script {
+                    echo "// docker: startup & test container"
+                    docker.image('localhost:8082/hello-sb:1.0')
+                    .withRun('-p 9080:8080 --network cicd_net --name hello-sb --hostname hello-sb') {
+                        timeout(time: 120, unit: 'SECONDS') {
+                            waitUntil {
+                                def r = sh script:
+                                // Note:
+                                // Use container internal port '8080', external port doesn't work
+                                //
+                                'curl http://hello-sb:8080/ | grep "Hello World!"', returnStatus: true
+                                return (r == 0);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
