@@ -150,7 +150,7 @@ pipeline {
                 script {
                     echo "// docker: startup & test container"
                     docker.image('localhost:8082/hello-sb:1.0')
-                    .withRun('-p 9080:8080 --network cicd_net --name hello-sb --hostname hello-sb') {
+                    .withRun('-p 8080:8080 --network cicd_net --name hello-sb --hostname hello-sb') {
                         timeout(time: 120, unit: 'SECONDS') {
                             waitUntil {
                                 def r = sh script:
