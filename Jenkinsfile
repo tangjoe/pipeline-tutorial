@@ -128,12 +128,14 @@ pipeline {
             }
         }
         stage('clair-scanner: image security scan') {
-            sh '''
-              echo "// clair-scanner: image security scan"
-              IP=$(ip r | tail -n1 | awk '{ print $9 }')
-              wget -q0 clair-scanner https://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_linux_amd64 && chmod +x clair-scanner
-              ./clair-scanner --ip $IP --clair=http://clair:6060 --threshold="Critical" hello-sb:latest || exit0
-            '''
+            steps {
+                sh '''
+                  echo "// clair-scanner: image security scan"
+                  IP=$(ip r | tail -n1 | awk '{ print $9 }')
+                  wget -q0 clair-scanner https://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_linux_amd64 && chmod +x clair-scanner
+                  ./clair-scanner --ip $IP --clair=http://clair:6060 --threshold="Critical" hello-sb:latest || exit0
+                '''
+            }
         }
         stage('docker: push image to Nexus') {
             steps {
