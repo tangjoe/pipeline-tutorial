@@ -2,7 +2,9 @@ pipeline {
     agent any
 
     parameters {
-        string(name:'repoUrl', defaultValue:'https://github.com/tangjoe/helloworld.git', description:'代码路径')
+        string(name:'repoUrl', defaultValue:'https://github.com/tangjoe/spring-boot.git', description:'代码路径')
+        string(name:'dev_server', defaultValue:'IP,Port,Name,Passwd', description:'开发服务器(IP,Port,Name,Passwd)')
+        string(name:'prod_server', defaultValue:'IP,Port,Name,Passwd', description:'生产服务器(IP,Port,Name,Passwd)')
     }
 
     environment {
@@ -29,6 +31,24 @@ pipeline {
     }
 
     stages {
+        stage('清理本地仓库') {
+            steps {
+                echo "// 清理本地仓库"
+            }
+        }
+        stage('部署到开发环境') {
+            steps {
+                echo "// 部署到开发环境"
+                script {
+                    def dev_split=params.dev_server.split(",")
+                    dev_serverIP=dev_split[0]
+                    dev_serverPort=dev_split[1]
+                    dev_serverName=dev_split[2]
+                    dev_serverPasswd=dev_split[3]
+                }
+                echo "Dev: ${dev_serverName}:${dev_serverPasswd}@${dev_serverIP}:${dev_serverPort}"
+            }
+        }
         stage('git: checkout source') {
             steps {
                 echo "// git: checkout source"
@@ -104,7 +124,7 @@ pipeline {
             steps {
                 echo "// docker: build image"
                 sh 'mkdir -p target/dependency; cd target/dependency; jar -xf ../*.jar'
-                sh 'docker build -t helloworld -f Dockerfile.helloworld .'
+                sh 'docker build -t hello-sb -f Dockerfile.spring-boot .'
             }
         }
         stage('clair-scanner: image security scan') {
@@ -121,23 +141,23 @@ pipeline {
             steps {
                 echo "// docker: push image to Nexus"
                 sh 'docker login -u docker -p P@ssw0rd localhost:8082'
-                sh 'docker tag helloworld localhost:8082/helloworld:1.0'
-                sh 'docker push localhost:8082/helloworld:1.0'
+                sh 'docker tag hello-sb localhost:8082/hello-sb:1.0'
+                sh 'docker push localhost:8082/hello-sb:1.0'
             }
         }
         stage('docker: startup container') {
             steps {
                 script {
                     echo "// docker: startup & test container"
-                    docker.image('localhost:8082/helloworld:1.0')
-                    .withRun('-p 9080:8080 --network cicd_net --name helloworld --hostname helloworld') {
+                    docker.image('localhost:8082/hello-sb:1.0')
+                    .withRun('-p 9080:8080 --network cicd_net --name hello-sb --hostname hello-sb') {
                         timeout(time: 120, unit: 'SECONDS') {
                             waitUntil {
                                 def r = sh script:
                                 // Note:
                                 // Use container internal port '8080', external port doesn't work
                                 //
-                                'curl http://helloworld:8080/', returnStatus: true
+                                'curl http://hello-sb:8080/', returnStatus: true
                                 return (r == 0);
                             }
                         }
