@@ -42,7 +42,7 @@ pipeline {
                     def scannerHome = tool 'SonarQube Scanner';
                         withSonarQubeEnv("SonarQube") {
                             sh "${tool("SonarQube Scanner")}/bin/sonar-scanner \
-                                -Dsonar.projectKey=hello-sb \
+                                -Dsonar.projectKey=helloworld \
                                 -Dsonar.sources=. \
                                 -Dsonar.css.node=. \
                                 -Dsonar.host.url=http://sonarqube:9000 \
@@ -113,7 +113,7 @@ pipeline {
                   echo "// clair-scanner: image security scan"
                   IP=$(ip r | tail -n1 | awk '{ print $9 }')
                   wget -qO clair-scanner https://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_linux_amd64 && chmod +x clair-scanner
-                  ./clair-scanner --ip $IP --clair=http://clair:6060 --threshold="Critical" hello-sb:latest || exit 0
+                  ./clair-scanner --ip $IP --clair=http://clair:6060 --threshold="Critical" helloworld:latest || exit 0
                 '''
             }
         }
